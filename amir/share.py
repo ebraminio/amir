@@ -6,14 +6,16 @@
 
 class Share:
     mainwin = None
+    webserver = None
     config = None
     session = None
 
     # Get global object for sharing.
     # \param mainwin Amir main window object
     # \param config  amirconfig instance that contain all config data
-    def __init__(self, mainwin=None, config=None):
+    def __init__(self, mainwin=None, webserver=None, config=None):
         self.mainwin = mainwin
+        self.webserver = webserver
         self.config = config
 ## @}
 

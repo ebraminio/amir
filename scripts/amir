@@ -48,10 +48,13 @@ from amir import subjects, addeditdoc, database, numberentry, notebookreport, do
     setting, helpers, customers, customergroup, product, productgroup, factors, cardexreport, user, utility, chequereport
 from amir import amirconfig
 from amir.share import share
+from amir import webserver
 import datetime
 from sqlalchemy.sql import func
 from sqlalchemy import or_
 from amir.database import *
+import threading
+import webbrowser
 import locale
 import gettext
 from gi.repository import Gtk, Gdk, GdkPixbuf, GObject
@@ -128,6 +131,26 @@ logging.debug('Locale Path=%s' % (config.locale_path))
 gettext.bindtextdomain('amir', config.locale_path)
 gettext.textdomain('amir')
 gettext.install('amir', config.locale_path)
+
+def web_open(url):
+    browser = None
+    is_chromium = True
+    try:
+        browser = webbrowser.get('chromium')
+    except:
+        try:
+            browser = webbrowser.get('chrome')
+        except:
+            is_chromium = False
+            browser = webbrowser.get()
+
+    # Now always available, better to not count on it
+    browser.background = True
+
+    if is_chromium:
+        browser.remote_args = browser.args = ['--app=%s', '--window-size=300,300']
+
+    browser.open(url)
 
 
 class MainWindow(GObject.GObject):
@@ -210,6 +233,7 @@ class MainWindow(GObject.GObject):
         reportwin.showResult()
 
     def aboutAmir(self, sender):
+        web_open('http://127.0.0.1:8643/')
         aboutwin = self.builder.get_object("aboutdialog")
         aboutwin.run()
         aboutwin.hide()
@@ -582,4 +606,6 @@ if __name__ == "__main__":
 
     mainwin = MainWindow()
     share.mainwin = mainwin
+    share.webserver = threading.Thread(target=webserver.flask_thread, args=(), daemon=True)
+    share.webserver.start()
     mainwin.main()
